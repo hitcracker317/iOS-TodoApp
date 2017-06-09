@@ -21,7 +21,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         let ud = UserDefaults.standard
         if let savedTodo = ud.object(forKey: "todo") as? Data{
             if let unachiveSavedTodo = NSKeyedUnarchiver.unarchiveObject(with: savedTodo) as? [Todo] {
-                print("保存内容：\(unachiveSavedTodo)")
                 todoArray.append(contentsOf: unachiveSavedTodo)
             }
         }
@@ -67,6 +66,13 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         cell.textLabel?.textColor = UIColor.white
         cell.backgroundColor = UIColor.orange
         
+        //チェックマーク
+        if todo.isChecked {
+            cell.accessoryType = UITableViewCellAccessoryType.checkmark
+        } else {
+            cell.accessoryType = UITableViewCellAccessoryType.none
+        }
+
         return cell
     }
     
@@ -90,13 +96,34 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.todoArray.insert(todoData, at: 0)
         
         
+        //テーブルに行を追加
+        self.todoTableView.insertRows(at: [IndexPath(row: 0, section:0)], with: UITableViewRowAnimation.right)
+        
+        saveTodo()
+    }
+    
+    //セルを選択したとき
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        let todo = self.todoArray[indexPath.row] as! Todo
+        
+        //チェックマーク
+        if todo.isChecked {
+            todo.isChecked = false
+        } else {
+            todo.isChecked = true
+        }
+        
+        tableView.reloadRows(at: [indexPath], with: UITableViewRowAnimation.fade)
+        
+        saveTodo()
+    }
+    
+    func saveTodo () {
+        //データ保存
         let ud = UserDefaults.standard
         let archiveData = NSKeyedArchiver.archivedData(withRootObject: self.todoArray)
         ud.set(archiveData, forKey: "todo")
-        
-        //テーブルに行を追加
-        self.todoTableView.insertRows(at: [IndexPath(row: 0, section:0)], with: UITableViewRowAnimation.right)
     }
-    
 }
 
